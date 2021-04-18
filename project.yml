@@ -1,0 +1,106 @@
+name: Template_iOS_UIKit_SwiftUI_VIPER
+# configs:
+#     Debug: debug
+#     Release: release
+# configFiles:
+#   Debug: configs/Debug.xcconfig
+#   Release: configs/Release.xcconfig
+options:
+  bundleIdPrefix: com.sakiyamaK
+  deploymentTarget:
+    iOS: 13.0
+packages:
+  IQKeyboardManagerSwift:
+      url: https://github.com/hackiftekhar/IQKeyboardManager
+      from: 6.5.0
+  SnapKit:
+      url: https://github.com/SnapKit/SnapKit
+      from: 5.0.1
+  CombineCocoa:
+      url: https://github.com/CombineCommunity/CombineCocoa
+      from: 0.0.2
+  OHHTTPStubs:
+    url: https://github.com/AliSoftware/OHHTTPStubs
+    from: 9.0.0
+  Nimble:
+    url: https://github.com/Quick/Nimble
+    from: 8.1.2
+  Quick:
+    url: https://github.com/Quick/Quick
+    from: 3.0.0
+configs:
+  Debug: debug
+  Release: release
+schemes:
+  Template_iOS_UIKit_SwiftUI_VIPER:
+    build:
+      targets:
+        Template_iOS_UIKit_SwiftUI_VIPER: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      gatherCoverageData: true
+      randomExecutionOrder: true
+      coverageTargets:
+        - Template_iOS_UIKit_SwiftUI_VIPER
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
+
+targets:
+  Template_iOS_UIKit_SwiftUI_VIPER:
+    platform: iOS
+    type: application
+    dependencies:
+        - package: IQKeyboardManagerSwift
+        - package: SnapKit
+        - package: CombineCocoa
+    sources:
+      - path: Template_iOS_UIKit_SwiftUI_VIPER/
+      - path: R.generated.swift
+        optional: true
+    preBuildScripts:
+        - path: /bin/sh
+          name: Run Script(Swiftformat)
+          script: |
+            if which mint >/dev/null; then
+              git diff --name-only | grep .swift | while read filename; do
+                mint run swiftformat "$filename" --swiftversion 5
+              done
+            else
+              echo "warning: Mintがインストールされていません。こちらからダウンロードしてください https://github.com/yonaskolb/Mint"
+            fi
+        - path: /bin/sh
+          name: Run Script(SwiftLint)
+          script: |
+            if which swiftlint >/dev/null; then
+              swiftlint
+            else
+              echo "warning: Mintがインストールされていません。こちらからダウンロードしてください https://github.com/yonaskolb/Mint"
+            fi
+        - path: /bin/sh
+          name: Run Script(R.swift)
+          script: |
+                "$PODS_ROOT/R.swift/rswift" generate "$SRCROOT/R.generated.swift"
+          inputFiles:
+                - $TEMP_DIR/rswift-lastrun
+          outputFiles:
+                - $SRCROOT/R.generated.swift
+    scheme:
+        testTargets:
+            - Template_iOS_UIKit_SwiftUI_VIPERTests
+  # Unit Test
+  Template_iOS_UIKit_SwiftUI_VIPERTests:
+    platform: iOS
+    type: bundle.unit-test
+    sources: Template_iOS_UIKit_SwiftUI_VIPERTests
+    dependencies:
+      - package: Nimble
+      - package: Quick
+      - package: OHHTTPStubs
+        product: OHHTTPStubsSwift
+      - target: Template_iOS_UIKit_SwiftUI_VIPER
